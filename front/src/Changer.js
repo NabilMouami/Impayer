@@ -16,8 +16,8 @@ export const Changer = () => {
     nremise: cheque.nremise,
     montant: cheque.montant,
     verser: cheque.verser,
-    datereception: "",
-    dateecheance: "",
+    dateretour: cheque.dateretour,
+    dateecheance: cheque.dateecheance,
   });
   console.log(post);
   const handleChange = (e) => {
@@ -31,11 +31,11 @@ export const Changer = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     await axios
-      .patch(`http://localhost:5000/client/${cheque._id}`, post)
+      .patch(`http://localhost:5000/client/${cheque.id}`, post)
       .then(() => {
         toast.success("Success: Vous avez Changer quelque Chose!!.");
       });
-      navigate("/")
+    navigate("/");
   };
   return (
     <div>
@@ -94,7 +94,26 @@ export const Changer = () => {
               name="verser"
             />
           </div>
-        
+          <div>
+            <label>Date Retour:</label>
+            <input
+              type="date"
+              defaultValue={cheque.dateretour}
+              onChange={handleChange}
+              placeholder="Date Retour ..."
+              name="dateretour"
+            />
+          </div>
+          <div>
+            <label>Date D'Echeance:</label>
+            <input
+              type="date"
+              defaultValue={cheque.dateecheance}
+              onChange={handleChange}
+              placeholder="Date Echeance ..."
+              name="dateecheance"
+            />
+          </div>
 
           <button type="submit" className="btn">
             Enregistrer
