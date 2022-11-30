@@ -104,7 +104,7 @@ export default function Impayer() {
     e.preventDefault();
     axios.post("http://localhost:5000/client", post).then(() => {
       toast.success("Success: Vous avez ajouter Le Client!!.");
-      setOpen2(false)
+      setOpen2(false);
     });
   };
   const selOptions = [];
@@ -116,7 +116,7 @@ export default function Impayer() {
   for (var i = 0; i < filtered.length; i++) {
     var obj = {};
     if (filtered.length > 0) {
-      obj["id"] = filtered[i]._id;
+      obj["id"] = filtered[i].id;
       obj["nom"] = filtered[i].nom;
       obj["value"] = filtered[i].nom;
       obj["label"] = filtered[i].nom;
@@ -163,60 +163,59 @@ export default function Impayer() {
     boxShadow: 24,
     p: 4,
   };
+  console.log(datas);
   const onExporting = React.useCallback((e) => {
-    setTimeout(()=> {
-      const newItems = datas.filter((item) => item.intitule !== "intitule");
+    setTimeout(() => {
+      const newItems = datas.filter((item) => item.intitule !== null);
       setDatas(newItems);
-    },"2000");
+    }, "2000");
 
-    setTimeout(()=> {
+    setTimeout(() => {
+      const doc = new jsPDF();
 
-    const doc = new jsPDF();
+      exportDataGrid({
+        jsPDFDocument: doc,
+        component: e.component,
+        columnWidths: [35, 15, 25, 20, 20],
+        customizeCell({ gridCell, pdfCell }) {
+          if (
+            gridCell.rowType === "data" &&
+            gridCell.column.dataField === "Phone"
+          ) {
+            pdfCell.text = pdfCell.text.replace(
+              /(\d{3})(\d{3})(\d{4})/,
+              "($1) $2-$3"
+            );
+          } else if (gridCell.rowType === "group") {
+            pdfCell.backgroundColor = "#BEDFE6";
+          } else if (gridCell.rowType === "totalFooter") {
+            pdfCell.font.style = "italic";
+          }
+        },
+        customDrawCell(options) {
+          const { gridCell, pdfCell } = options;
 
-    exportDataGrid({
-      jsPDFDocument: doc,
-      component: e.component,
-      columnWidths: [35, 15, 25, 20, 20],
-      customizeCell({ gridCell, pdfCell }) {
-        if (
-          gridCell.rowType === "data" &&
-          gridCell.column.dataField === "Phone"
-        ) {
-          pdfCell.text = pdfCell.text.replace(
-            /(\d{3})(\d{3})(\d{4})/,
-            "($1) $2-$3"
-          );
-        } else if (gridCell.rowType === "group") {
-          pdfCell.backgroundColor = "#BEDFE6";
-        } else if (gridCell.rowType === "totalFooter") {
-          pdfCell.font.style = "italic";
-        }
-      },
-      customDrawCell(options) {
-        const { gridCell, pdfCell } = options;
+          if (
+            gridCell.rowType === "data" &&
+            gridCell.column.dataField === "Website"
+          ) {
+            options.cancel = true;
+            doc.setFontSize(11);
+            doc.setTextColor("#0000FF");
 
-        if (
-          gridCell.rowType === "data" &&
-          gridCell.column.dataField === "Website"
-        ) {
-          options.cancel = true;
-          doc.setFontSize(11);
-          doc.setTextColor("#0000FF");
-
-          const textHeight = doc.getTextDimensions(pdfCell.text).h;
-          doc.textWithLink(
-            "website",
-            options.rect.x + pdfCell.padding.left,
-            options.rect.y + options.rect.h / 2 + textHeight / 2,
-            { url: pdfCell.text }
-          );
-        }
-      },
-    }).then(() => {
-      doc.save("Companies.pdf");
-    });
-  },"8000")
-
+            const textHeight = doc.getTextDimensions(pdfCell.text).h;
+            doc.textWithLink(
+              "website",
+              options.rect.x + pdfCell.padding.left,
+              options.rect.y + options.rect.h / 2 + textHeight / 2,
+              { url: pdfCell.text }
+            );
+          }
+        },
+      }).then(() => {
+        doc.save("Companies.pdf");
+      });
+    }, "8000");
   });
 
   const renderGridCell = React.useCallback(
@@ -259,7 +258,7 @@ export default function Impayer() {
       <DataGrid
         id="gridContainer"
         dataSource={datas}
-        keyExpr="_id"
+        keyExpr="id"
         selectedRowKeys={selectedItemKeys}
         onSelectionChanged={selectionChanged}
         showBorders={true}
@@ -299,7 +298,7 @@ export default function Impayer() {
         disabled={!selectedItemKeys.length}
         text="Delete Selected Records"
       />
-    
+
       <Modal
         open={open1}
         onClose={handleClose1}
